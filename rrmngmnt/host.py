@@ -346,12 +346,8 @@ class Host(Resource):
         """
         if user is None:
             user = copy.copy(self.root_user)
-        id_rsa_pub = ssh.ID_RSA_PUB % os.path.expanduser(
-            "~%s" % user.name
-        )
-        id_rsa_prv = ssh.ID_RSA_PRV % os.path.expanduser(
-            "~%s" % user.name
-        )
+        id_rsa_pub = self.executor().public_key_path
+        id_rsa_prv = self.executor().private_key_path
         if not self.fs.exists(id_rsa_pub):
             # Generating SSH key if not exist
             cmd = [

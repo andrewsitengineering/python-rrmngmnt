@@ -10,8 +10,6 @@ from rrmngmnt.executor import Executor, ExecutorFactory
 
 AUTHORIZED_KEYS = os.path.join("%s", ".ssh/authorized_keys")
 KNOWN_HOSTS = os.path.join("%s", ".ssh/known_hosts")
-ID_RSA_PUB = os.path.join("%s", ".ssh/id_rsa.pub")
-ID_RSA_PRV = os.path.join("%s", ".ssh/id_rsa")
 CONNECTIVITY_TIMEOUT = 600
 CONNECTIVITY_SAMPLE_TIME = 20
 TCP_CONNECTION_TIMEOUT = 20
@@ -60,11 +58,7 @@ class RemoteExecutor(Executor):
             self._ssh = paramiko.SSHClient()
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if self._executor.use_pkey:
-                self.pkey = paramiko.RSAKey.from_private_key_file(
-                    os.getenv(
-                        "HOST_SSH_KEY", ID_RSA_PRV % os.path.expanduser('~')
-                    )
-                )
+                self.pkey = paramiko.RSAKey.from_private_key_file(self._executor.private_key_path)
                 self._executor.user.password = None
             else:
                 self.pkey = None
@@ -145,6 +139,7 @@ class RemoteExecutor(Executor):
          - out/err string which were produced by command
          - returncode the exit status of command
         """
+
         def __init__(self, cmd, session):
             super(RemoteExecutor.Command, self).__init__(
                 subprocess.list2cmdline(cmd),
@@ -206,7 +201,7 @@ class RemoteExecutor(Executor):
                 self.err = normalize_string(err.read())
             return self.rc, self.out, self.err
 
-    def __init__(self, user, address, use_pkey=False, port=22):
+    def __init__(self, user, address, use_pkey=False, private_key_path=None, public_key_path=None, port=22):
         """
         Args:
             use_pkey (bool): Use ssh private key in the connection
@@ -217,6 +212,8 @@ class RemoteExecutor(Executor):
         super(RemoteExecutor, self).__init__(user)
         self.address = address
         self.use_pkey = use_pkey
+        self.private_key_path = private_key_path
+        self.public_key_path = public_key_path
         self.port = port
 
     def session(self, timeout=None):
@@ -302,8 +299,10 @@ class RemoteExecutor(Executor):
 
 
 class RemoteExecutorFactory(ExecutorFactory):
-    def __init__(self, use_pkey=False, port=22):
+    def __init__(self, use_pkey=False, private_key_path=None, public_key_path=None, port=22):
         self.use_pkey = use_pkey
+        self.private_key_path = private_key_path
+        self.public_key_path = public_key_path
         self.port = port
 
     def build(self, host, user):
