@@ -23,8 +23,8 @@ class User(Resource):
 class RootUser(User):
     NAME = 'root'
 
-    def __init__(self, password):
-        super(RootUser, self).__init__(self.NAME, password)
+    def __init__(self, name, password):
+        super(RootUser, self).__init__(name, password)
 
 
 class Domain(Resource):
