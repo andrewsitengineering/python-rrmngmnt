@@ -307,4 +307,4 @@ class RemoteExecutorFactory(ExecutorFactory):
 
     def build(self, host, user):
         return RemoteExecutor(
-            user, host.ip, use_pkey=self.use_pkey, port=self.port)
+            user, host.ip, use_pkey=self.use_pkey, private_key_path=self.private_key_path, public_key_path=self.public_key_path, port=self.port)
